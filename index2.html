@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSeatPlanner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+        .board {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .table {
+            width: 100px;
+            height: 50px;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to CSeatPlanner</h1>
+        <div id="loginSection">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Log In</button>
+            <p id="loginMessage" class="hidden"></p>
+        </div>
+        <div id="layoutSection" class="hidden">
+            <input type="number" id="width" placeholder="Width (1-20)" min="1" max="20">
+            <input type="number" id="depth" placeholder="Depth (1-20)" min="1" max="20">
+            <button onclick="createLayout()">Create Layout</button>
+            <div class="board" id="board"></div>
+            <button id="addStudentBtn" class="hidden" onclick="startAddingStudent()">Add Student</button>
+        </div>
+    </div>
+
+    <script>
+        let layout = [];
+        let students = [];
+        let occupied = [];
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (username === 'admin' && password === 'admin') {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('layoutSection').classList.remove('hidden');
+                document.getElementById('loginMessage').classList.add('hidden');
+                alert('Welcome to CSeatPlanner programmed by Filip W');
+            } else {
+                document.getElementById('loginMessage').innerText = 'Invalid login';
+                document.getElementById('loginMessage').classList.remove('hidden');
+            }
+        }
+
+        function createLayout() {
+            const width = parseInt(document.getElementById('width').value);
+            const depth = parseInt(document.getElementById('depth').value);
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            layout = Array.from({ length: depth }, () => Array(width).fill(null));
+            occupied = Array.from({ length: depth }, () => Array(width).fill(false));
+            board.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
+            for (let i = 0; i < depth; i++) {
+                for (let j = 0; j < width; j++) {
+                    const table = document.createElement('div');
+                    table.className = 'table';
+                    table.id = `${i}-${j}`;
+                    table.innerText = layout[i][j] || '';
+                    board.appendChild(table);
+                }
+            }
+            document.getElementById('addStudentBtn').classList.remove('hidden');
+        }
+
+        function startAddingStudent() {
+            const name = prompt("Enter student's name:");
+            const frontRow = prompt("Should the student sit in the front row? (y/n):") === 'y';
+            const notWith = prompt("Enter name of student not to sit with (leave blank if none):");
+
+            if (name) {
+                placeStudent(name, frontRow, notWith);
+            }
+        }
+
+        function placeStudent(name, frontRow, notWith) {
+            let placed = false;
+            const frontRowLimit = Math.ceil(layout.length / 2); // Number of rows considered as the front
+            while (!placed) {
+                const row = frontRow ? Math.floor(Math.random() * frontRowLimit) : Math.floor(Math.random() * (layout.length - frontRowLimit) + frontRowLimit);
+                const col = Math.floor(Math.random() * layout[0].length);
+
+                if (!occupied[row][col] && (!notWith || !students.includes(notWith))) {
+                    layout[row][col] = name;
+                    occupied[row][col] = true;
+                    document.getElementById(`${row}-${col}`).innerText = name;
+                    students.push(name);
+                    placed = true;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
